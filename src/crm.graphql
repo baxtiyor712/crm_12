@@ -1,0 +1,234 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+"""✅ CRM Tizimidagi O‘quvchilarning asosiy ma’lumot modeli"""
+type Student {
+  """O‘quvchining unikal ID raqami"""
+  id: Int!
+
+  """O‘quvchining to‘liq ismi"""
+  fullName: String!
+
+  """O‘quvchining telefon raqami"""
+  phone: String!
+
+  """O‘qiyotgan yo‘nalishi yoki fani"""
+  direction: String!
+
+  """Ota-ona (yoki vasiy)ning ismi"""
+  parentName: String!
+
+  """Ota-ona (yoki vasiy)ning telefon raqami"""
+  parentPhone: String!
+
+  """O‘quvchi rasmi uchun URL manzil (ixtiyoriy)"""
+  photo: String
+
+  """O‘quv markaziga qo‘shilgan sana"""
+  joinedAt: DateTime!
+
+  """O‘quv markazidan ketgan sana (agar bo‘lsa)"""
+  leftAt: DateTime
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+"""✅ O‘quv markazidagi o‘quv guruhlarining asosiy ma’lumot modeli"""
+type Group {
+  """Guruhning unikal ID raqami"""
+  id: Int!
+
+  """Guruhning asosiy fani yoki yo‘nalishi"""
+  subject: String!
+
+  """Dars o‘tiladigan kunlar (masalan, Dush/Chor/Ju)"""
+  days: String!
+
+  """Darsning boshlanish va tugash vaqti"""
+  time: String!
+
+  """Guruh o‘qituvchisining ismi"""
+  teacherName: String!
+
+  """O‘qituvchining telefon raqami"""
+  teacherPhone: String!
+
+  """O‘qituvchi rasmi uchun URL manzil (ixtiyoriy)"""
+  teacherPhoto: String
+}
+
+"""✅ O‘quvchilardan qabul qilingan to‘lovlar haqidagi ma’lumot modeli"""
+type Pay {
+  """To‘lov yozuvining unikal ID raqami"""
+  id: Int!
+
+  """To‘lov qilgan o‘quvchining ismi"""
+  studentName: String!
+
+  """To‘lov qilingan yo‘nalish (fan)"""
+  direction: String!
+
+  """O‘quvchining (yoki to‘lovchining) telefon raqami"""
+  phoneNumber: String!
+
+  """To‘lov qabul qilingan o‘qituvchi/guruh nomi"""
+  teacherName: String!
+
+  """To‘lov amalga oshirilgan sana"""
+  paymentDate: DateTime!
+}
+
+"""✅ O‘quv markaziga qiziqish bildirgan shaxslarning murojaatlari"""
+type Inquiry {
+  """Murojaat yozuvining unikal ID raqami"""
+  id: Int!
+
+  """Murojaat qilgan shaxsning to‘liq ismi"""
+  studentName: String!
+
+  """Murojaat qilgan shaxsning telefon raqami"""
+  phoneNumber: String!
+
+  """Murojaat sababi yoki qo‘shimcha eslatma"""
+  note: String!
+
+  """Murojaat qilingan sana va vaqt"""
+  createdAt: DateTime!
+}
+
+"""✅ Oy davomidagi O‘quvchi Statisitikasining ma’lumot modeli"""
+type Chart {
+  """Muayyan oyda CRM ga qo‘shilgan yangi o‘quvchilar soni"""
+  joined: Int!
+
+  """Muayyan oyda CRM dan ketgan o‘quvchilar soni"""
+  left: Int!
+}
+
+"""✅ Har bir dars uchun olingan davomat ma’lumotlari"""
+type Attendance {
+  """Davomat yozuvining unikal identifikatori"""
+  id: ID!
+
+  """Davomati olingan o‘quvchining ID raqami"""
+  studentId: String!
+
+  """Davomat olingan darsning ID raqami (Guruh/Dars IDsi)"""
+  lessonId: String!
+
+  """Davomat holati (masalan, "Keldi", "Kelmadi", "Kechikdi")"""
+  status: String!
+
+  """Davomat olingan sana"""
+  date: String!
+}
+
+type Query {
+  students: [Student!]!
+  student(id: Int!): Student!
+  groups: [Group!]!
+  group(id: Int!): Group!
+  pays: [Pay!]!
+  pay(id: Int!): Pay!
+  inquiries: [Inquiry!]!
+  inquiry(id: Int!): Inquiry!
+  monthlyStats(year: Int!, month: Int!): Chart!
+  getAttendanceByLesson(lessonId: String!): [Attendance!]!
+  getAttendanceByStudent(studentId: String!): [Attendance!]!
+}
+
+type Mutation {
+  createStudent(createStudentInput: CreateStudentInput!): Student!
+  updateStudent(updateStudentInput: UpdateStudentInput!): Student!
+  removeStudent(id: Int!): Student!
+  leaveStudent(id: Int!): Student!
+  createGroup(createGroupInput: CreateGroupInput!): Group!
+  updateGroup(updateGroupInput: UpdateGroupInput!): Group!
+  removeGroup(id: Int!): Group!
+  createPay(createPayInput: CreatePayInput!): Pay!
+  updatePay(updatePayInput: UpdatePayInput!): Pay!
+  removePay(id: Int!): Pay!
+  createInquiry(createInquiryInput: CreateInquiryInput!): Inquiry!
+  updateInquiry(updateInquiryInput: UpdateInquiryInput!): Inquiry!
+  removeInquiry(id: Int!): Inquiry!
+  markAttendance(records: [CreateAttendanceInput!]!): [Attendance!]!
+}
+
+input CreateStudentInput {
+  fullName: String!
+  phone: String!
+  direction: String!
+  parentName: String!
+  parentPhone: String!
+  photo: String
+}
+
+input UpdateStudentInput {
+  fullName: String
+  phone: String
+  direction: String
+  parentName: String
+  parentPhone: String
+  photo: String
+  id: Int!
+}
+
+input CreateGroupInput {
+  subject: String!
+  days: String!
+  time: String!
+  teacherName: String!
+  teacherPhone: String!
+  teacherPhoto: String
+}
+
+input UpdateGroupInput {
+  subject: String
+  days: String
+  time: String
+  teacherName: String
+  teacherPhone: String
+  teacherPhoto: String
+  id: Int!
+}
+
+input CreatePayInput {
+  studentName: String!
+  direction: String!
+  phoneNumber: String!
+  teacherName: String!
+  paymentDate: DateTime!
+}
+
+input UpdatePayInput {
+  studentName: String
+  direction: String
+  phoneNumber: String
+  teacherName: String
+  paymentDate: DateTime
+  id: Int!
+}
+
+input CreateInquiryInput {
+  studentName: String!
+  phoneNumber: String!
+  note: String!
+}
+
+input UpdateInquiryInput {
+  studentName: String
+  phoneNumber: String
+  note: String
+  id: Int!
+}
+
+input CreateAttendanceInput {
+  studentId: String!
+  lessonId: String!
+  status: String!
+  date: String!
+}
