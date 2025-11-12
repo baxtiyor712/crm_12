@@ -1,47 +1,46 @@
-import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
+// src/students/students.resolver.ts
+
+import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
 import { StudentsService } from './students.service';
 import { Student } from './entities/student.entity';
 import { CreateStudentInput } from './dto/create-student.input';
 import { UpdateStudentInput } from './dto/update-student.input';
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Resolver(() => Student)
 export class StudentsResolver {
   constructor(private readonly studentsService: StudentsService) { }
 
-  @UseGuards(JwtAuthGuard)
-  @Mutation(() => Student)
-  async createStudent(
-    @Args("createStudentInput") createStudentInput: CreateStudentInput,
-    @Context() context,
-  ) {
-    const user = context.req.user;
-    return this.studentsService.create(createStudentInput, user.userId);
+  // ------------------------------------------------------------------
+  // MUTATIONS (Ma'lumotlarni o'zgartirish)
+  // ------------------------------------------------------------------
+
+  @Mutation(() => Student, { description: 'Yangi talaba murojaatini yaratish' })
+  createStudent(@Args('createStudentInput') createStudentInput: CreateStudentInput) {
+    return this.studentsService.create(createStudentInput);
   }
 
-  @Query(() => [Student], { name: 'students' })
+  @Mutation(() => Student, { description: 'Mavjud talaba ma\'lumotlarini yangilash' })
+  updateStudent(@Args('updateStudentInput') updateStudentInput: UpdateStudentInput) {
+    // ID ni Stringga o'tkazib yuborish
+    return this.studentsService.update(String(updateStudentInput.id), updateStudentInput);
+  }
+
+  @Mutation(() => Student, { description: 'Talabani tizimdan o\'chirish' })
+  removeStudent(@Args('id', { type: () => ID }) id: string) {
+    return this.studentsService.remove(id);
+  }
+
+  // ------------------------------------------------------------------
+  // QUERIES (Ma'lumotlarni o'qish)
+  // ------------------------------------------------------------------
+
+  @Query(() => [Student], { name: 'students', description: 'Barcha talabalar ro\'yxatini qaytaradi' })
   findAll() {
     return this.studentsService.findAll();
   }
 
-  @Query(() => Student, { name: 'student' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
+  @Query(() => Student, { name: 'student', description: 'ID bo\'yicha yagona talabani qaytaradi' })
+  findOne(@Args('id', { type: () => ID }) id: string) {
     return this.studentsService.findOne(id);
-  }
-
-  @Mutation(() => Student)
-  updateStudent(@Args('updateStudentInput') updateStudentInput: UpdateStudentInput) {
-    return this.studentsService.update(updateStudentInput.id, updateStudentInput);
-  }
-
-  @Mutation(() => Student)
-  removeStudent(@Args('id', { type: () => Int }) id: number) {
-    return this.studentsService.remove(id);
-  }
-
-  @Mutation(() => Student)
-  leaveStudent(@Args('id', { type: () => Int }) id: number) {
-    return this.studentsService.leave(id);
   }
 }

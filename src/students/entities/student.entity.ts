@@ -1,49 +1,50 @@
 // src/students/entities/student.entity.ts
 
-import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 
-// ✅ Sinfga umumiy izoh qo'shildi
-@ObjectType({ description: '✅ CRM Tizimidagi O‘quvchilarning asosiy ma’lumot modeli' })
-@Entity('students')
+// MongoDB/Mongoose tomonidan ishlatiladigan Document interfeysi
+export type StudentDocument = Student & Document;
+
+@ObjectType()
+@Schema({ timestamps: true }) // createdAt va updatedAt avtomatik qo'shiladi
 export class Student {
+  
+  // GraphQL tomonidan yaratilgan ID
+  @Field(() => ID)
+  id: string;
 
-  @PrimaryGeneratedColumn()
-  @Field(() => Int, { description: 'O‘quvchining unikal ID raqami' }) // ✅ ID uchun izoh
-  id: number;
+  // 1. Talabaning ismi
+  @Prop({ required: true })
+  @Field(() => String, { description: "Talabaning to'liq ismi" })
+  studentName: string;
 
-  @Field({ description: 'O‘quvchining to‘liq ismi' }) // ✅ fullName uchun izoh
-  @Column()
-  fullName: string;
+  // 2. Telefon raqami
+  @Prop({ required: true, unique: true })
+  @Field(() => String, { description: "Aloqa uchun telefon raqami" })
+  phoneNumber: string;
 
-  @Field({ description: 'O‘quvchining telefon raqami' }) // ✅ phone uchun izoh
-  @Column()
-  phone: string;
+  // 3. Qo'shimcha izoh (Botda ixtiyoriy, lekin bazada mavjud)
+  @Prop({ required: false })
+  @Field(() => String, { nullable: true, description: "Qo'shimcha izoh" })
+  note: string;
+  
+  // 4. Murojaat holati (yangi, ko'rib chiqilmoqda, yopilgan)
+  @Prop({ 
+      type: String, 
+      enum: ['new', 'pending', 'closed'], 
+      default: 'new' 
+  })
+  @Field(() => String, { description: "Murojaat holati (new, pending, closed)" })
+  status: 'new' | 'pending' | 'closed';
 
-  @Field({ description: 'O‘qiyotgan yo‘nalishi yoki fani' }) // ✅ direction uchun izoh
-  @Column()
-  direction: string;
+  // Mongoose tomonidan avtomatik kiritiladigan vaqt tamg'alari
+  @Field(() => Date)
+  createdAt: Date;
 
-  @Field({ description: 'Ota-ona (yoki vasiy)ning ismi' }) // ✅ parentName uchun izoh
-  @Column()
-  parentName: string;
-
-  @Field({ description: 'Ota-ona (yoki vasiy)ning telefon raqami' }) // ✅ parentPhone uchun izoh
-  @Column()
-  parentPhone: string;
-
-  @Field({ nullable: true, description: 'O‘quvchi rasmi uchun URL manzil (ixtiyoriy)' }) // ✅ photo uchun izoh
-  @Column({ nullable: true })
-  photo?: string;
-
-  @Column({ nullable: true })
-  userId: string; // userId: Bu maydonni GraphQL sxemasiga chiqarmaymiz
-
-  @Field({ description: 'O‘quv markaziga qo‘shilgan sana' }) // ✅ joinedAt uchun izoh
-  @CreateDateColumn({ type: 'timestamp' })
-  joinedAt: Date;
-
-  @Field({ nullable: true, description: 'O‘quv markazidan ketgan sana (agar bo‘lsa)' }) // ✅ leftAt uchun izoh
-  @Column({ type: 'timestamp', nullable: true })
-  leftAt?: Date;
+  @Field(() => Date)
+  updatedAt: Date;
 }
+
+export const StudentSchema = SchemaFactory.createForClass(Student);

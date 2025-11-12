@@ -1,50 +1,60 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+// src/students/students.service.ts
+
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { CreateStudentInput } from './dto/create-student.input';
 import { UpdateStudentInput } from './dto/update-student.input';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Student } from './entities/student.entity';
-import { Repository } from 'typeorm';
+import { Student, StudentDocument } from './entities/student.entity';
 
 @Injectable()
 export class StudentsService {
-  constructor(@InjectRepository(Student) private studentRepo: Repository<Student>) { }
+  constructor(
+    // Student Document bilan ishlash uchun Mongoose Model'ni injeksiya qilish
+    @InjectModel(Student.name) private studentModel: Model<StudentDocument>,
+  ) {}
 
-  async create(createStudentInput: CreateStudentInput, userId: string) {
-    const student = this.studentRepo.create({
-      ...createStudentInput,
-      userId, 
-    });
-    return await this.studentRepo.save(student);
+  // 1. CREATE: Yangi talaba (murojaat) yaratish
+  async create(createStudentInput: CreateStudentInput): Promise<Student> {
+    const createdStudent = new this.studentModel(createStudentInput);
+    return createdStudent.save();
   }
 
-
-  findAll() {
-    return this.studentRepo.find()
+  // 2. READ: Barcha talabalarni topish
+  async findAll(): Promise<Student[]> {
+    return this.studentModel.find().exec();
   }
 
-  async findOne(id: number) {
-    const student = await this.studentRepo.findOne({ where: { id: +id } })
-    if (!student) throw new NotFoundException()
-    return student
+  // 3. READ: ID bo'yicha yagona talabani topish
+  async findOne(id: string): Promise<Student> {
+    const student = await this.studentModel.findById(id).exec();
+    if (!student) {
+      throw new NotFoundException(`Student with ID "${id}" not found`);
+    }
+    return student;
+  }
+  
+  // 4. UPDATE: Talaba ma'lumotlarini yangilash
+  async update(id: string, updateStudentInput: UpdateStudentInput): Promise<Student> {
+    const updatedStudent = await this.studentModel.findByIdAndUpdate(
+      id,
+      { $set: updateStudentInput },
+      { new: true }, // Yangilangan hujjatni qaytarish uchun
+    ).exec();
+
+    if (!updatedStudent) {
+        throw new NotFoundException(`Student with ID "${id}" not found for update`);
+    }
+
+    return updatedStudent;
   }
 
-  async update(id: number, updateStudentInput: UpdateStudentInput) {
-    const student = await this.studentRepo.findOne({ where: { id: +id } })
-    if (!student) throw new NotFoundException()
-    return this.studentRepo.update(id, updateStudentInput)
-  }
-
-  async remove(id: number) {
-    const student = await this.studentRepo.findOne({ where: { id: +id } })
-    if (!student) throw new NotFoundException()
-    return this.studentRepo.delete(id)
-  }
-
-  async leave(id: number) {
-    const student = await this.studentRepo.findOneBy({ id });
-    if (!student) throw new NotFoundException()
-    if (student.leftAt) throw new BadRequestException()
-    student.leftAt = new Date();
-    return this.studentRepo.save(student);
+  // 5. DELETE: Talabani o'chirish (agar kerak bo'lsa, bu yerda yumshoq o'chirishni ham qo'shish mumkin)
+  async remove(id: string): Promise<Student> {
+    const deletedStudent = await this.studentModel.findByIdAndDelete(id).exec();
+    if (!deletedStudent) {
+        throw new NotFoundException(`Student with ID "${id}" not found for deletion`);
+    }
+    return deletedStudent;
   }
 }
