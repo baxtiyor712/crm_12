@@ -3,8 +3,8 @@
 import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
 import { StudentsService } from './students.service';
 import { Student } from './entities/student.entity';
-import { CreateStudentInput } from './dto/create-student.input';
-import { UpdateStudentInput } from './dto/update-student.input';
+import { CreateStudentDto } from './dto/create-student.input';
+import { UpdateStudentDto } from './dto/update-student.input';
 
 @Resolver(() => Student)
 export class StudentsResolver {
@@ -15,12 +15,12 @@ export class StudentsResolver {
   // ------------------------------------------------------------------
 
   @Mutation(() => Student, { description: 'Yangi talaba murojaatini yaratish' })
-  createStudent(@Args('createStudentInput') createStudentInput: CreateStudentInput) {
+  createStudent(@Args('createStudentInput') createStudentInput: CreateStudentDto) {
     return this.studentsService.create(createStudentInput);
   }
 
   @Mutation(() => Student, { description: 'Mavjud talaba ma\'lumotlarini yangilash' })
-  updateStudent(@Args('updateStudentInput') updateStudentInput: UpdateStudentInput) {
+  updateStudent(@Args('updateStudentInput') updateStudentInput: UpdateStudentDto) {
     // ID ni Stringga o'tkazib yuborish
     return this.studentsService.update(String(updateStudentInput.id), updateStudentInput);
   }

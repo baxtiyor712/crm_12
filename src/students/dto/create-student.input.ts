@@ -1,22 +1,31 @@
-import { InputType, Field } from '@nestjs/graphql';
+// src/students/dto/create-student.dto.ts
 
-@InputType()
-export class CreateStudentInput {
-  @Field()
-  fullName: string
+import { IsEmail, IsNotEmpty, IsPhoneNumber, IsString, IsOptional, IsDateString, IsMongoId, IsIn } from 'class-validator';
 
-  @Field()
-  phone: string; 
+export class CreateStudentDto {
+  @IsString()
+  @IsNotEmpty()
+  fullName: string;
 
-  @Field()
-  direction: string;
+  // Telefon raqam formati +998XX...
+  @IsPhoneNumber('UZ')
+  @IsNotEmpty()
+  phone: string;
 
-  @Field()
-  parentName: string; 
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
 
-  @Field()
-  parentPhone: string; 
+  @IsOptional()
+  @IsDateString()
+  birthDate?: string; // Sana string formatida keladi, MongoDB uni Date ga o'tkazadi
 
-  @Field({ nullable: true })
-  photo?: string; 
+  @IsOptional()
+  @IsMongoId() // Bu maydon MongoDB ObjectId bo'lishi kerak
+  groupId?: string; 
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['to\'langan', 'qarzdor', 'yangi'])
+  paymentStatus?: 'to\'langan' | 'qarzdor' | 'yangi';
 }
