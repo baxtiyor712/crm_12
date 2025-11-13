@@ -1,66 +1,45 @@
-import { Module } from "@nestjs/common";
+// src/app.module.ts
+
+import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { join } from "path";
+import { MongooseModule } from '@nestjs/mongoose';
+
+// Barcha asosiy modullarni import qilish
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module'; 
 import { StudentsModule } from './students/students.module';
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { Student } from "./students/entities/student.entity";
-import { GroupsModule } from './groups/groups.module';
-import { Group } from "./groups/entities/group.entity";
-import { PaysModule } from './pays/pays.module';
-import { Pay } from "./pays/entities/pay.entity";
-import { InquiryModule } from './inquiry/inquiry.module';
-import { Inquiry } from "./inquiry/entities/inquiry.entity";
-import { ChartModule } from './chart/chart.module';
-import { Chart } from "./chart/entities/chart.entity";
-import { MongooseModule } from '@nestjs/mongoose'
-import { AuthModule } from "./auth/auth.module";
-import { UsersModule } from "./users/users.module";
-import { AttendanceModule } from './attendance/attendance.module';
-import { BotModule } from "./bot/bot.module";
+// ... Boshqa modullar
+// import { GroupsModule } from './groups/groups.module';
+// import { PaysModule } from './pays/pays.module';
+// import { ChartModule } from './chart/chart.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
+    // 1. Konfiguratsiya (.env faylini o'qish)
+    ConfigModule.forRoot({
+      isGlobal: true, // Konfiguratsiyani hamma joyda ishlatish
+    }),
 
+    // 2. Ma'lumotlar bazasi ulanishi (MongoDB)
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGO_URI'),
+        // .env dagi MONGO_URI dan olinadi
+        uri: configService.get<string>('MONGO_URI'), 
       }),
       inject: [ConfigService],
     }),
 
-    TypeOrmModule.forRoot({
-      type: "postgres",
-      username: "postgres",
-      host: "localhost",
-      port: 5432,
-      password: "1111",
-      database: "crm",
-      entities: [Student, Group, Pay, Inquiry, Chart],
-      synchronize: true,
-    }),
-
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
-      playground: true,
-      autoSchemaFile: join(process.cwd(), 'src/crm.graphql'),
-    }),
-
-    StudentsModule,
-    GroupsModule,
-    PaysModule,
-    InquiryModule,
-    ChartModule,
-    BotModule,
-
+    // 3. Modullarni ulash (Users va Students hozircha eng muhim)
+    UsersModule,      // POST /users uchun
     AuthModule,
-    UsersModule,
-    AttendanceModule
+    StudentsModule,   // GraphQL/Students uchun
+    // GroupsModule,
+    // PaysModule,
+    // ChartModule,
+    // ...
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule { }
+export class AppModule {}
